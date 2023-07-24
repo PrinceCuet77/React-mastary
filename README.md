@@ -29,7 +29,7 @@ npm install
 - JSX means JavaScript XML.
 - A component in React is just a Javascript function which returns JSX code.
 - **Component Convention:** Function name will be the file name.
-- **Component Creation Convention:** All the components are kept in the `components/` directory.
+- **Component Creation Convention:** All the components are kept in the `components/` directory under the `src/` directory.
 
 ```text
 src/
@@ -511,7 +511,7 @@ export default ExpenseData
 
 - **Component composition:** building complex user interfaces by combining and nesting smaller, reusable components together.
 - this approach allows developers to create modular, maintainable and scalable code.
-- Each component focuses on a specific functionality or view and they can be composed togetherto form the complete UI.
+- Each component focuses on a specific functionality or view and they can be composed together to form the complete UI.
 
 - In `ExpenseItem.js` file -
 
@@ -665,17 +665,29 @@ export default ExpenseItem
 
 - `useState` is a funciton provided by the React library
 - Importing as a named import
-- Allows us to define values as `state` where changes to these values should reflect in the component function being called again
+
+```js
+import { useState } from 'react'
+
+const ExpenseItem = (props) => {
+  const [value, setValue] = useState(0) // useState
+
+  return <></>
+}
+```
+
+- Whenever `state` is changed, the component function being called again
 - This is the key difference to the regular variable
 - `useState` is a React hook
 - React hooks are recognized to see the word `use` at the beginning
 - Hooks must only be called inside the React component
 - `useState` wants a default state value
-- Because based on that special kind of variable, the component will be called again
 - `useState` returns an array
 - First element of that is the variable itself
-- Second element of that array is the updating function of that variable
-- that second element not only update the value of this variable but also re-render the component
+- Second element of that array is the updating function of that variable or first element
+- that second element,
+  -  update the value of this variable
+  -  re-render the component as well
 - The state is separated on a per component instance basis.
 
 ```js
@@ -687,8 +699,7 @@ import { useState } from 'react'
 const ExpenseItem = (props) => {
   const { title, date, amount } = props.expense
 
-  // useState
-  const [myTitle, setMyTitle] = useState(title)
+  const [myTitle, setMyTitle] = useState(title) // useState
 
   const clickHandler = () => {
     setMyTitle('Another title')
@@ -746,6 +757,8 @@ export default ExpenseForm() => {
     enteredDate: '',
   })
 
+  // 1. Copy the whole object
+  // 2. Update the specific property
   const titleChangeHandler = (event) => {
     // Update single state
     setUserInput({ ...userInput, enteredTitle: event.target.value })
@@ -798,4 +811,12 @@ export default ExpenseForm() => {
 
 - Because React will ensure that `prevState` contains the latest update of `userInput` state
 - That's why if I have a dependency of previous state, I need to use state like the previous style
-- 
+-
+
+
+1. render the component for the first time
+2. set the initial value of the state variable using useState
+3. while updating using set function of that state variable
+   1. Update the state variable using set function, but I can't fetch imediately the updated state value 
+   2. Re-render the component (call component function again)
+   3. While re-rendering, fetching the updated value of the state variable
