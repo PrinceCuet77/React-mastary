@@ -513,28 +513,36 @@ export default ExpenseData
 - this approach allows developers to create modular, maintainable and scalable code.
 - Each component focuses on a specific functionality or view and they can be composed together to form the complete UI.
 
-- In `ExpenseItem.js` file -
+- In `Expenses.js` file -
 
 ```js
-import ExpenseData from './ExpenseData'
-import './ExpenseItem.css'
-import Card from './Card'
+import ExpenseItem from './ExpenseItem'
+import './Expenses.css'
+import Card from '../UI/Card'
 
-const ExpenseItem = (props) => {
-  const { title, date, amount } = props.expense
-
+const Expenses = (props) => {
   return (
-    <Card className='expense-item'>
-      <ExpenseData date={date}></ExpenseData>
-      <div className='expense-item__description'>
-        <h2>{title}</h2>
-        <div className='expense-item__price'>${amount}</div>
-      </div>
+    <Card className='expenses'>
+      <ExpenseItem
+        title={props.items[0].title}
+        amount={props.items[0].amount}
+        date={props.items[0].date}
+      />
+      <ExpenseItem
+        title={props.items[1].title}
+        amount={props.items[1].amount}
+        date={props.items[1].date}
+      />
+      <ExpenseItem
+        title={props.items[2].title}
+        amount={props.items[2].amount}
+        date={props.items[2].date}
+      />
     </Card>
   )
 }
 
-export default ExpenseItem
+export default Expenses
 ```
 
 - In `Card.js` file -
@@ -1171,9 +1179,122 @@ export default ExpenseForm
 ```
 
 - **Lifting The State Up**
-- If I need to pass date or state from NewExpense to Expense component then I need this lifting the state up concept
+- If I need to pass date or state from `NewExpense` to `Expense` component (between siblings components),I need this lifting the state up concept
 - Because I don’t have any direct connection between two sibling components
 - I know using props I can communicate from parent to child and vice versa
-- Using that concept, I can lift the state up to the parent component (NewExpense -> App)
-- Similarly, passing state date via props to child component (App -> Expenses)
-- Photo
+- Using that concept, I can lift the state up to the parent component (`NewExpense` -> `App`)
+- Similarly, passing state date via `props` to child component (`App` -> `Expenses`)
+
+![](pyhoto/../photo/lifting-state-up.png)
+
+- **Derived / Computed State**
+- If possible, instead of using state value, I can use derived or computed State which depends of state value or variable
+
+```js
+const Expenses = (props) => {
+  const [filteredYear, setFilteredYear] = useState('2020')
+
+  let filterIntoText = '2019, 2021 & 2022'
+
+  if (filteredYear === '2019') {
+    filterIntoText = '2020, 2021 & 2022'
+  } else if (filteredYear === '2020') {
+    filterIntoText = '2019, 2021 & 2022'
+  } else if (filteredYear === '2021') {
+    filterIntoText = '2019, 2020 & 2022'
+  } else {
+    filterIntoText = '2019, 2020 & 2021'
+  }
+
+  return <></>
+}
+
+export default Expenses
+```
+
+- **Controlled Component** have their state and behavior controlled by the parent component.
+- These components rely on props passed down from the parent component to update their state and behavior
+- `App.js` file -
+
+```js
+const App = () => {
+  const [value, setValue] = React.useState(0)
+
+  return <Expense onSaveValue={setValue} />
+}
+
+export default App
+```
+
+- `Expense.js` file -
+
+```js
+const Expense = (props) => {
+  // Controlled the behavior using props received from the parent component
+  return <p>The value: {props.value}</p>
+}
+
+export default Expense
+```
+
+- **Uncontrolled Component** refer to components that manage their own state internally
+- `Expense.js` file -
+
+```js
+const Expense = () => {
+  const [value, setValue] = React.useState(0)
+
+  // Controlled the behavior using its own state
+  const clickHandler = () => {
+    setValue((prevState) => {
+      return prevState + 1
+    })
+  }
+
+  return (
+    <>
+      <p>The value: {value}</p>
+      <button onclick={clickHandler}></button>
+    </>
+  )
+}
+
+export default Expense
+```
+
+- **Statefull Component** have internal state
+- `Expense.js` file -
+
+```js
+const Expense = () => {
+  const [value, setValue] = React.useState(0)
+
+  // Contain its own state
+  const clickHandler = () => {
+    setValue((prevState) => {
+      return prevState + 1
+    })
+  }
+
+  return (
+    <>
+      <p>The value: {value}</p>
+      <button onclick={clickHandler}></button>
+    </>
+  )
+}
+
+export default Expense
+```
+
+- **Stateless Component** have no internal state
+- `Expense.js` file -
+
+```js
+const Expense = () => {
+  return <div>Hello World</div>
+}
+
+export default Expense
+```
+
