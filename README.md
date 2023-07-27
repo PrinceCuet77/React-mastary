@@ -674,6 +674,8 @@ const ExpenseItem = (props) => {
 
   return <></>
 }
+
+export default ExpenseItem
 ```
 
 - Whenever `state` is changed, the component function being called again
@@ -686,9 +688,10 @@ const ExpenseItem = (props) => {
 - First element of that is the variable itself
 - Second element of that array is the updating function of that variable or first element
 - that second element,
-  -  update the value of this variable
-  -  re-render the component as well
+  - update the value of this variable
+  - re-render the component as well
 - The state is separated on a per component instance basis.
+- `ExpenseItem.js` file:
 
 ```js
 import ExpenseData from './ExpenseData'
@@ -727,7 +730,7 @@ export default ExpenseItem
 ```js
 export default ExpenseForm() => {
   const [enteredTitle, setEnteredTitle] = useState('')
-  const [enteredAmount, setEnteredAmont] = useState('')
+  const [enteredAmount, setEnteredAmount] = useState('')
   const [enteredDate, setEnteredDate] = useState('')
 
   const titleChangeHandler = (event) => {
@@ -736,7 +739,7 @@ export default ExpenseForm() => {
   }
 
   const amountChangeHandler = (event) => {
-    setEnteredAmont(event.target.value)
+    setEnteredAmount(event.target.value)
   }
 
   const dateChangeHandler = (event) => {
@@ -747,7 +750,52 @@ export default ExpenseForm() => {
 }
 ```
 
-- Use single state -
+- For multiple state, I can use one single function instead of using multiple functions per state
+- `ExpenseForm.js` file:
+
+```js
+import { useState } from 'react'
+import './ExpenseForm.css'
+
+const ExpenseForm = () => {
+  const [enteredTitle, setEnteredTitle] = useState('')
+  const [enteredAmount, setEnteredAmount] = useState('')
+  const [enteredDate, setEnteredDate] = useState('')
+
+  // For multiple state, I can use one single function instead of using multiple functions per state
+  const inputChangeHandler = (identifier, value) => {
+    if (identifier === 'title') {
+      setEnteredTitle(value)
+    } else if (identifier === 'amount') {
+      setEnteredAmount(value)
+    } else if (identifier === 'date') {
+      setEnteredDate(value)
+    }
+  }
+
+  return <></>
+}
+
+export default ExpenseForm
+```
+
+- And use this `inputChangeHandler` function like that -
+
+```js
+<div className='new-expense__control'>
+  <label>Title</label>
+  <input
+    type='text'
+    onChange={(event) => inputChangeHandler('title', event.target.value)}
+  />
+</div>
+```
+
+- If I write `inputChangeHandler('title', event.target.value)`, it will execute while the web page loading time.
+- So, I need to execute like `(event) => inputChangeHandler('title', event.target.value)`
+
+- **Use single state** -
+- `ExpenseForm.js` file:
 
 ```js
 export default ExpenseForm() => {
@@ -777,6 +825,7 @@ export default ExpenseForm() => {
 ```
 
 - Whenever I update state which depends on the previous state, it's recommended to use like the following -
+- `ExpenseForm.js` file:
 
 ```js
 export default ExpenseForm() => {
@@ -811,12 +860,320 @@ export default ExpenseForm() => {
 
 - Because React will ensure that `prevState` contains the latest update of `userInput` state
 - That's why if I have a dependency of previous state, I need to use state like the previous style
--
-
+- `useState` component flow -
 
 1. render the component for the first time
 2. set the initial value of the state variable using useState
 3. while updating using set function of that state variable
-   1. Update the state variable using set function, but I can't fetch imediately the updated state value 
+   1. Update the state variable using set function, but I can't fetch imediately the updated state value
    2. Re-render the component (call component function again)
    3. While re-rendering, fetching the updated value of the state variable
+
+- Form submit functionality -
+
+```js
+// Inside the component function
+const submitHandler = (event) => {
+  event.preventDefault()
+
+  // Taking the variables and store into the other variables
+  const expenseData = {
+    title: enteredTitle,
+    data: enteredDate,
+    amount: enteredAmount,
+  }
+}
+```
+
+- Use that `submitHandler` funciton inside the form tag like -
+
+```js
+<form className='new-expense__controls' onSubmit={submitHandler}></form>
+```
+
+- **Two way binding:**
+- First I have to clear the entered data from the states
+
+```js
+const submitHandler = (event) => {
+  event.preventDefault()
+
+  const expenseData = {
+    title: enteredTitle,
+    data: enteredDate,
+    amount: enteredAmount,
+  }
+
+  console.log(expenseData)
+
+  setEnteredTitle('')
+  setEnteredAmount('')
+  setEnteredDate('')
+}
+```
+
+- Then I have to use the state value inside the `input` tag
+
+```js
+<input
+  type='text'
+  value={enteredTitle}
+  onChange={(event) => inputChangeHandler('title', event.target.value)}
+/>
+```
+
+- **Child-to-Parent Component communication:**
+- Passing the function from one component (parent) to another component (child) using `props`
+- `App.js` file:
+
+```js
+import NewExpense from './components/NewExpense/NewExpense'
+
+function App() {
+  const addExpenseHandler = (expense) => {
+    console.log(expense)
+  }
+
+  return (
+    <div>
+      <NewExpense onAddExpense={addExpenseHandler} />
+    </div>
+  )
+}
+
+export default App
+```
+
+- Then use that function inside `NewExpense` component and pass to it's child component -
+- `NewExpense.js` file:
+
+```js
+import ExpenseForm from './ExpenseForm'
+import './NewExpense.css'
+
+const NewExpense = (props) => {
+  const saveExpenseDataHandler = (enteredExpenseData) => {
+    const expenseData = {
+      ...enteredExpenseData,
+      id: Math.random().toString(),
+    }
+
+    // Use that received function
+    props.onAddExpense(expenseData)
+  }
+
+  return (
+    <div className='new-expense'>
+      {/*  */}
+      <ExpenseForm onSaveExpenseData={saveExpenseDataHandler} />
+    </div>
+  )
+}
+
+export default NewExpense
+```
+
+- After that, I pass `saveExpenseDataHandler` function as props.
+- `ExpenseForm.js` file:
+
+```js
+import { useState } from 'react'
+import './ExpenseForm.css'
+
+const ExpenseForm = (props) => {
+  const [enteredTitle, setEnteredTitle] = useState('')
+  const [enteredAmount, setEnteredAmount] = useState('')
+  const [enteredDate, setEnteredDate] = useState('')
+
+  // For multiple state, I can use one single function instead of using multiple functions per state
+  const inputChangeHandler = (identifier, value) => {
+    if (identifier === 'title') {
+      setEnteredTitle(value)
+    } else if (identifier === 'amount') {
+      setEnteredAmount(value)
+    } else if (identifier === 'date') {
+      setEnteredDate(value)
+    }
+  }
+
+  const submitHandler = (event) => {
+    event.preventDefault()
+
+    const expenseData = {
+      title: enteredTitle,
+      data: enteredDate,
+      amount: enteredAmount,
+    }
+
+    // Use here
+    props.onSaveExpenseData(expenseData)
+
+    setEnteredTitle('')
+    setEnteredAmount('')
+    setEnteredDate('')
+  }
+
+  return (
+    <form className='new-expense__controls' onSubmit={submitHandler}>
+      <div className='new-expense__control'>
+        <label>Title</label>
+        <input
+          type='text'
+          value={enteredTitle}
+          onChange={(event) => inputChangeHandler('title', event.target.value)}
+        />
+      </div>
+      <div className='new-expense__control'>
+        <label htmlFor=''>Amount</label>
+        <input
+          type='number'
+          min='0.01'
+          step='0.01'
+          value={enteredAmount}
+          onChange={(event) => inputChangeHandler('amount', event.target.value)}
+        />
+      </div>
+      <div className='new-expense__control'>
+        <label htmlFor=''>Date</label>
+        <input
+          type='date'
+          min='2018-01-01'
+          max='2022-12-31'
+          value={enteredDate}
+          onChange={(event) => inputChangeHandler('date', event.target.value)}
+        />
+      </div>
+      <div className='new-expense__actions'>
+        <button type='submit'>Add Expense</button>
+      </div>
+    </form>
+  )
+}
+
+export default ExpenseForm
+```
+
+- Method 02:
+- I pass `addExpenseHandler` function from `App` component to `ExpenseForm` via `NewExpense` component
+- `App.js` file:
+
+```js
+import NewExpense from './components/NewExpense/NewExpense'
+
+function App() {
+  const addExpenseHandler = (expense) => {
+    console.log(expense)
+  }
+
+  return (
+    <div>
+      <NewExpense onAddExpense={addExpenseHandler} />
+    </div>
+  )
+}
+
+export default App
+```
+
+- `NewExpense.js` file:
+
+```js
+import ExpenseForm from './ExpenseForm'
+import './NewExpense.css'
+
+const NewExpense = (props) => {
+  return (
+    <div className='new-expense'>
+      <ExpenseForm onSaveExpenseData={props.onAddExpense} />
+    </div>
+  )
+}
+
+export default NewExpense
+```
+
+- `ExpenseForm.js` file:
+
+```js
+import { useState } from 'react'
+import './ExpenseForm.css'
+
+const ExpenseForm = (props) => {
+  const [enteredTitle, setEnteredTitle] = useState('')
+  const [enteredAmount, setEnteredAmount] = useState('')
+  const [enteredDate, setEnteredDate] = useState('')
+
+  const inputChangeHandler = (identifier, value) => {
+    if (identifier === 'title') {
+      setEnteredTitle(value)
+    } else if (identifier === 'amount') {
+      setEnteredAmount(value)
+    } else if (identifier === 'date') {
+      setEnteredDate(value)
+    }
+  }
+
+  const submitHandler = (event) => {
+    event.preventDefault()
+
+    const expenseData = {
+      title: enteredTitle,
+      data: enteredDate,
+      amount: enteredAmount,
+    }
+
+    // Use here
+    props.onSaveExpenseData(expenseData)
+
+    setEnteredTitle('')
+    setEnteredAmount('')
+    setEnteredDate('')
+  }
+
+  return (
+    <form className='new-expense__controls' onSubmit={submitHandler}>
+      <div className='new-expense__control'>
+        <label>Title</label>
+        <input
+          type='text'
+          value={enteredTitle}
+          onChange={(event) => inputChangeHandler('title', event.target.value)}
+        />
+      </div>
+      <div className='new-expense__control'>
+        <label htmlFor=''>Amount</label>
+        <input
+          type='number'
+          min='0.01'
+          step='0.01'
+          value={enteredAmount}
+          onChange={(event) => inputChangeHandler('amount', event.target.value)}
+        />
+      </div>
+      <div className='new-expense__control'>
+        <label htmlFor=''>Date</label>
+        <input
+          type='date'
+          min='2018-01-01'
+          max='2022-12-31'
+          value={enteredDate}
+          onChange={(event) => inputChangeHandler('date', event.target.value)}
+        />
+      </div>
+      <div className='new-expense__actions'>
+        <button type='submit'>Add Expense</button>
+      </div>
+    </form>
+  )
+}
+
+export default ExpenseForm
+```
+
+- **Lifting The State Up**
+- If I need to pass date or state from NewExpense to Expense component then I need this lifting the state up concept
+- Because I don’t have any direct connection between two sibling components
+- I know using props I can communicate from parent to child and vice versa
+- Using that concept, I can lift the state up to the parent component (NewExpense -> App)
+- Similarly, passing state date via props to child component (App -> Expenses)
+- Photo
